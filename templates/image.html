@@ -1,0 +1,7 @@
+{% extends "layout.html" %}
+{% block body %}
+<h1>Ta dah<h1>
+<a href="intent:#Intent;action=android.intent.action.SEND;type=image/png;S.android.intent.extra.STREAM=#;end" border=0>
+	<img src="data:image/png;base64,{{ foto }}"/></a>
+{% endblock %}
+
