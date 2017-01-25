@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "moblayout.html" %}
 {% block body %}
 <style>
   #progress_bar {
@@ -21,13 +21,14 @@
     width: 0;
   }
 </style>
-<h1>Upload new File</h1>
+<h4>Upload new File</h4>
 <form id="myform" method=post enctype=multipart/form-data>
 <input type="file" id="myfile" name="myfile" accept="image/*" />
 <div id="progress_bar"><div class="percent">0%</div></div>
-<button onclick="abortRead();">Annulla</button>
+<!-- <button onclick="abortRead();">Annulla</button> -->
 <input type=submit value=Save> 
 </form>
+<div id="response"></div>
 <script>
 var form = document.getElementById("myform");
 function dosubmit() {
@@ -52,6 +53,7 @@ xhr.onreadystatechange = function(ev){
             //console.log(xhr.responseText);
             progress.style.width = '100%';
             progress.textContent = '100%';
+            document.getElementById("response").innerHTML=xhr.responseText; 
         }
     };
 };

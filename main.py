@@ -67,9 +67,50 @@ def allowed_file(filename):
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-        #data = request.get_data()
-        app.logger.info(request.files)
-        return render_template('upload.html')
+        if 'file0' not in request.files:
+            #flash('No file part')
+            flash("No sux files: %s" % (request.files))
+            return redirect(request.url)
+        file = request.files['file0']
+        # if user does not select file, browser also
+        # submit a empty part without filename
+        if file.filename == '':
+            flash('No file selected')
+            return redirect(request.url)
+        elif file and allowed_file(file.filename):
+            #flash('OK image received')
+            #return redirect(request.url)
+            filename = secure_filename(file.filename)
+            # salviamo il file
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
+            img = Image.open(data)
+            draw = ImageDraw.Draw(img)
+            # font = ImageFont.truetype(<font-file>, <font-size>)
+            fontsize = 1  # starting font size
+            # portion of image width you want text width to be
+            img_fraction = 0.50
+            txt = u"Milano 2.67 °C\nVento: 0.44 Km/h\nClear"
+            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+            while font.getsize(txt)[0] < img_fraction*img.size[0]:
+                # iterate until the text size is just larger than the criteria
+                fontsize += 1
+                font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+            # optionally de-increment to be sure it is less than criteria
+            fontsize -= 1
+            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+            # draw.text((x, y),"Sample Text",(r,g,b))
+            draw.text((0, -1),txt,(255,255,255),font=font)
+            display = cStringIO.StringIO()
+            img.save(display,format='PNG')
+            display.seek(0)
+            newimg = display.read()
+            b64 = base64.b64encode(newimg)
+            return render_template('image.html',foto=b64)
+        else:
+            flash('Forbidden file type')
+            return redirect(request.url)
+
         # salviamo il file
         #newfile = tempfile.NamedTemporaryFile(mode='wb',delete=False)
         #nome_newfile = newfile.name
@@ -81,74 +122,31 @@ def upload_file():
         #display.seek(0)
         #file = request.data
         #return render_template('image.html')
-        img = Image.open(nome_newfile)
-        draw = ImageDraw.Draw(img)
+#        img = Image.open(nome_newfile)
+#        draw = ImageDraw.Draw(img)
         # font = ImageFont.truetype(<font-file>, <font-size>)
-        fontsize = 1  # starting font size
+#        fontsize = 1  # starting font size
         # portion of image width you want text width to be
-        img_fraction = 0.50
-        txt = u"Milano 2.67 °C\nVento: 0.44 Km/h\nClear"
-        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-        while font.getsize(txt)[0] < img_fraction*img.size[0]:
-             # iterate until the text size is just larger than the criteria
-             fontsize += 1
-             font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+#        img_fraction = 0.50
+#        txt = u"Milano 2.67 °C\nVento: 0.44 Km/h\nClear"
+#        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+#        while font.getsize(txt)[0] < img_fraction*img.size[0]:
+#             # iterate until the text size is just larger than the criteria
+#             fontsize += 1
+#             font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
         # optionally de-increment to be sure it is less than criteria
-        fontsize -= 1
-        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+#        fontsize -= 1
+#        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
         # draw.text((x, y),"Sample Text",(r,g,b))
-        draw.text((0, -1),txt,(255,255,255),font=font)
-        display = cStringIO.StringIO()
-        img.save(display,format='PNG')
-        display.seek(0)
-        newimg = display.read()
-        b64 = base64.b64encode(newimg)
-        return render_template('image.html',foto=b64)
+#        draw.text((0, -1),txt,(255,255,255),font=font)
+#        display = cStringIO.StringIO()
+#        img.save(display,format='PNG')
+#        display.seek(0)
+#        newimg = display.read()
+#        b64 = base64.b64encode(newimg)
+#        return render_template('image.html',foto=b64)
 #        #return render_template('image.html',foto=b64)
 #        # check if the post request has the file part
-#        if 'file' not in request.files:
-#            #flash('No file part')
-#            flash("No sux data: %s" % (request.files))
-#            return redirect(request.url)
-#        file = request.files['file']
-#        # if user does not select file, browser also
-#        # submit a empty part without filename
-#        if file.filename == '':
-#            flash('No sux file')
-#            return redirect(request.url)
-#        elif file and allowed_file(file.filename):
-#            #flash('OK image received')
-#            #return redirect(request.url)
-#            filename = secure_filename(file.filename)
-#            # salviamo il file
-#            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-#            data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
-#            img = Image.open(data)
-#            draw = ImageDraw.Draw(img)
-#            # font = ImageFont.truetype(<font-file>, <font-size>)
-#            fontsize = 1  # starting font size
-#            # portion of image width you want text width to be
-#            img_fraction = 0.50
-#            txt = u"Milano 2.67 °C\nVento: 0.44 Km/h\nClear"
-#            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-#            while font.getsize(txt)[0] < img_fraction*img.size[0]:
-#                # iterate until the text size is just larger than the criteria
-#                fontsize += 1
-#                font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-#            # optionally de-increment to be sure it is less than criteria
-#            fontsize -= 1
-#            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-#            # draw.text((x, y),"Sample Text",(r,g,b))
-#            draw.text((0, -1),txt,(255,255,255),font=font)
-#            display = cStringIO.StringIO()
-#            img.save(display,format='PNG')
-#            display.seek(0)
-#            newimg = display.read()
-#            b64 = base64.b64encode(newimg)
-#            return render_template('image.html',foto=b64)
-#        else:
-#            flash('Forbidden file type')
-#            return redirect(request.url)
     else:
         return render_template('upload.html')
 
