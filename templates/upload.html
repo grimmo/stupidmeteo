@@ -7,7 +7,7 @@
     border: 1px solid #000;
     font-size: 14px;
     clear: both;
-    opacity: 0;
+    opacity: 1;
     -moz-transition: opacity 1s linear;
     -o-transition: opacity 1s linear;
     -webkit-transition: opacity 1s linear;
@@ -40,20 +40,40 @@ function callback(data)
         city = data.city;
         latitude = data.latitude;
         longitude = data.longitude;
+        city = 'Milano';
+        latitude = '45.5181';
+        longitude= '9.2143';
         console.log('La tua citta: '+city);
 }
-var script = document.createElement('script');
-script.type = 'text/javascript';
-script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
-var h = document.getElementsByTagName('script')[0];
-h.parentNode.insertBefore(script, h);
+// Riabilitare in produzione
+//var script = document.createElement('script');
+//script.type = 'text/javascript';
+//script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
+//var h = document.getElementsByTagName('script')[0];
+//h.parentNode.insertBefore(script, h);
 // --- Image upload --
 var form = document.getElementById("myform");
+
+function transferFailed(evt) {
+  console.log("An error occurred while transferring the file.");
+}
+
+function transferCanceled(evt) {
+  console.log("The transfer has been canceled by the user.");
+}
+
 function dosubmit() {
 var files = document.getElementById('myfile').files;
 var data = new FormData();
 var xhr = new XMLHttpRequest();
 var progress = document.querySelector('.percent');
+
+xhr.addEventListener("load", transferComplete);
+xhr.addEventListener("error", transferFailed);
+xhr.addEventListener("abort", transferCanceled);
+
+
+
 xhr.upload.addEventListener('progress',function(ev){
     if (ev.lengthComputable) {
         var percentLoaded = Math.round((ev.loaded / ev.total) * 100);
