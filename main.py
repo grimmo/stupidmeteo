@@ -64,9 +64,33 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def proporziona_testo(font,fontsize,text,fraction,image):
+    while font.getsize(text)[0] < fraction*image.size[0]:
+        # iterate until the text size is just larger than the criteria
+        fontsize += 1
+        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
+        # optionally de-increment to be sure it is less than criteria
+    fontsize -= 1
+    return fontsize
+
+def apply_watermark(image):
+    draw = ImageDraw.Draw(image)
+    text = "StupidMeteo, powered by Dark Sky API"
+    font = ImageFont.truetype('arial.ttf', 12)
+    textwidth, textheight = draw.textsize(text, font)
+    # calculate the x,y coordinates of the text
+    margin = 5
+    x = width - textwidth - margin
+    y = height - textheight - margin
+    # draw watermark in the bottom right corner
+    draw.text((x, y), text, font=font)
+    image.save('cats.png')
+    return image
+
 @app.route('/', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        app.logger.debug(request.form['city'])
         if 'file0' not in request.files:
             #flash('No file part')
             flash("No sux files: %s" % (request.files))
@@ -87,20 +111,22 @@ def upload_file():
             img = Image.open(data)
             draw = ImageDraw.Draw(img)
             # font = ImageFont.truetype(<font-file>, <font-size>)
-            fontsize = 1  # starting font size
             # portion of image width you want text width to be
-            img_fraction = 0.50
-            txt = u"Milano 2.67 °C\nVento: 0.44 Km/h\nClear"
-            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-            while font.getsize(txt)[0] < img_fraction*img.size[0]:
-                # iterate until the text size is just larger than the criteria
-                fontsize += 1
-                font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-            # optionally de-increment to be sure it is less than criteria
-            fontsize -= 1
-            font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-            # draw.text((x, y),"Sample Text",(r,g,b))
-            draw.text((0, -1),txt,(255,255,255),font=font)
+            W,H = img.size
+            city_fraction = 0.4
+            weather_fraction = 0.5
+            city = u'Milano'
+            txt = u"2.67°C Sereno\nVento: 0.44 Km/h"
+            city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
+            weather_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
+            city_fontsize = proporziona_testo(city_font,1,city,city_fraction,img)
+            city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", city_fontsize)
+            weather_fontsize = proporziona_testo(weather_font,1,txt,weather_fraction,img)
+            weather_font = font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", weather_fontsize)
+            w, h = draw.textsize(city,city_font)
+            draw.text((((W-w-5)/2),(H-h/2)/1.1), city, fill="white",font=city_font)
+            w, h = draw.textsize(txt,weather_font)
+            draw.text(((W-w-5)/2,(H-h-2)), txt, fill="white",font=weather_font)
             display = cStringIO.StringIO()
             img.save(display,format='PNG')
             display.seek(0)
@@ -110,48 +136,5 @@ def upload_file():
         else:
             flash('Forbidden file type')
             return redirect(request.url)
-
-        # salviamo il file
-        #newfile = tempfile.NamedTemporaryFile(mode='wb',delete=False)
-        #nome_newfile = newfile.name
-        #newfile.write(data)
-        #newfile.close()
-#            data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
-        #display = cStringIO.StringIO()
-        #display.write(data)
-        #display.seek(0)
-        #file = request.data
-        #return render_template('image.html')
-#        img = Image.open(nome_newfile)
-#        draw = ImageDraw.Draw(img)
-        # font = ImageFont.truetype(<font-file>, <font-size>)
-#        fontsize = 1  # starting font size
-        # portion of image width you want text width to be
-#        img_fraction = 0.50
-#        txt = u"Milano 2.67 °C\nVento: 0.44 Km/h\nClear"
-#        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-#        while font.getsize(txt)[0] < img_fraction*img.size[0]:
-#             # iterate until the text size is just larger than the criteria
-#             fontsize += 1
-#             font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-        # optionally de-increment to be sure it is less than criteria
-#        fontsize -= 1
-#        font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", fontsize)
-        # draw.text((x, y),"Sample Text",(r,g,b))
-#        draw.text((0, -1),txt,(255,255,255),font=font)
-#        display = cStringIO.StringIO()
-#        img.save(display,format='PNG')
-#        display.seek(0)
-#        newimg = display.read()
-#        b64 = base64.b64encode(newimg)
-#        return render_template('image.html',foto=b64)
-#        #return render_template('image.html',foto=b64)
-#        # check if the post request has the file part
     else:
         return render_template('upload.html')
-
-if __name__ == '__main__':
-    handler = RotatingFileHandler('stupidmeteo.log', maxBytes=10000, backupCount=1)
-    handler.setLevel(logging.INFO)
-    app.logger.addHandler(handler)
-    app.run()

@@ -30,6 +30,24 @@
 </form>
 <div id="response"></div>
 <script>
+// --- Geolocation --
+var city;
+var latitude;
+var longitude;
+function callback(data)
+{
+
+        city = data.city;
+        latitude = data.latitude;
+        longitude = data.longitude;
+        console.log('La tua citta: '+city);
+}
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
+var h = document.getElementsByTagName('script')[0];
+h.parentNode.insertBefore(script, h);
+// --- Image upload --
 var form = document.getElementById("myform");
 function dosubmit() {
 var files = document.getElementById('myfile').files;
@@ -60,6 +78,9 @@ xhr.onreadystatechange = function(ev){
 
 xhr.open('POST', '#', true);
 for(var i = 0; i < files.length; i++) data.append('file'+i, files[i]);
+data.append('city',city);
+data.append('latitude',latitude);
+data.append('longitude',longitude);
 xhr.send(data);
 }
 
@@ -68,4 +89,7 @@ event.preventDefault();
 dosubmit();
 });
 </script>
+<div class="footer.row">
+    <a href="https://darksky.net/poweredby/">Powered by Dark Sky</a>
+</div>
 {% endblock %}
