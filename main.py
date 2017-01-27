@@ -15,6 +15,7 @@ from werkzeug.utils import secure_filename
 import tempfile
 import os
 import cStringIO
+import forecastio
 
 UPLOAD_FOLDER = '/tmp'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
@@ -73,6 +74,12 @@ def proporziona_testo(font,fontsize,text,fraction,image):
     fontsize -= 1
     return fontsize
 
+def get_weather(api_key,lat,lng):
+    weather = forecastio.load_forecast(api_key,lat,lng)
+    current = weather.currently()
+    return current.temperature,current.summary,current.windSpeed
+
+
 def apply_watermark(image):
     draw = ImageDraw.Draw(image)
     text = "StupidMeteo, powered by Dark Sky API"
@@ -101,22 +108,28 @@ def upload_file():
         if file.filename == '':
             flash('No file selected')
             return redirect(request.url)
-        elif file and allowed_file(file.filename):
+        else:
             #flash('OK image received')
             #return redirect(request.url)
-            filename = secure_filename(file.filename)
+            #filename = secure_filename(file.filename)
             # salviamo il file
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
-            img = Image.open(data)
+            output = cStringIO.StringIO()
+            file.save(output)
+            output.seek(0)
+            #img = output.seek(0)
+            #data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
+            img = Image.open(output)
             draw = ImageDraw.Draw(img)
             # font = ImageFont.truetype(<font-file>, <font-size>)
             # portion of image width you want text width to be
             W,H = img.size
             city_fraction = 0.4
             weather_fraction = 0.9
-            city = u'Milano'
-            txt = u"2.67°C Sereno\nVento: 0.44 Km/h"
+            city = request.form['city']
+            latitude = request.form['latitude']
+            longitude = request.form['longitude']
+            meteo = get_weather(app.config['API_KEY'],latitude,longitude)
+            txt = u"%s°C\n%s\n%s Km/h" % (meteo[0],meteo[1],meteo[2])
             city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
             weather_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
             city_fontsize = proporziona_testo(city_font,1,city,city_fraction,img)
@@ -133,8 +146,5 @@ def upload_file():
             newimg = display.read()
             b64 = base64.b64encode(newimg)
             return render_template('image.html',foto=b64)
-        else:
-            flash('Forbidden file type')
-            return redirect(request.url)
     else:
         return render_template('upload.html')
