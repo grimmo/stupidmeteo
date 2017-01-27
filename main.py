@@ -114,7 +114,7 @@ def upload_file():
             # portion of image width you want text width to be
             W,H = img.size
             city_fraction = 0.4
-            weather_fraction = 0.5
+            weather_fraction = 0.9
             city = u'Milano'
             txt = u"2.67°C Sereno\nVento: 0.44 Km/h"
             city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
@@ -124,7 +124,7 @@ def upload_file():
             weather_fontsize = proporziona_testo(weather_font,1,txt,weather_fraction,img)
             weather_font = font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", weather_fontsize)
             w, h = draw.textsize(city,city_font)
-            draw.text((((W-w-5)/2),(H-h/2)/1.1), city, fill="white",font=city_font)
+            draw.text((((W-w-5)/2),(H-h/2)/1.25), city, fill="white",font=city_font)
             w, h = draw.textsize(txt,weather_font)
             draw.text(((W-w-5)/2,(H-h-2)), txt, fill="white",font=weather_font)
             display = cStringIO.StringIO()

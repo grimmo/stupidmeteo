@@ -1,34 +1,38 @@
-{% extends "moblayout.html" %}
+{% extends "layout_ratchet.html" %}
 {% block body %}
 <style>
-  #progress_bar {
-    margin: 10px 0;
-    padding: 3px;
-    border: 1px solid #000;
-    font-size: 14px;
-    clear: both;
-    opacity: 1;
-    -moz-transition: opacity 1s linear;
-    -o-transition: opacity 1s linear;
-    -webkit-transition: opacity 1s linear;
-  }
-  #progress_bar.loading {
-    opacity: 1.0;
-  }
-  #progress_bar .percent {
-    background-color: #99ccff;
-    height: auto;
-    width: 0;
-  }
+.fileContainer {
+    overflow: hidden;
+    position: relative;
+}
+
+.fileContainer [type=file] {
+    cursor: inherit;
+    display: block;
+    font-size: 999px;
+    filter: alpha(opacity=0);
+    min-height: 100%;
+    min-width: 100%;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    text-align: right;
+    top: 0;
+}
+
+.fileContainer [type=file] {
+    cursor: pointer;
+}
 </style>
-<h4>Upload new File</h4>
+<div class="content">
+	<p></p>
 <form id="myform" method=post enctype=multipart/form-data>
-<input type="file" id="myfile" name="myfile" accept="image/*" required />
-<div id="progress_bar"><div class="percent">0%</div></div>
+<label class="fileContainer btn btn-positive btn-block">
+Scegli una fotografia
+<input type="file" id="myfile" name="myfile" accept="image/*" required /></label>
 <!-- <button onclick="abortRead();">Annulla</button> -->
-<input type=submit value=Save> 
+<!-- <input type=submit  class="btn btn-positive btn-block" value=Carica>  -->
 </form>
-<div id="response"></div>
 <script>
 // --- Geolocation --
 var city;
@@ -54,6 +58,15 @@ function callback(data)
 // --- Image upload --
 var form = document.getElementById("myform");
 
+var inputElement = document.getElementById("myfile");
+inputElement.addEventListener("change", handleFiles, false);
+function handleFiles() {
+  //var fileList = this.files; /* now you can work with the file list */
+  console.log('File selezionato.');
+  document.getElementById("hourglass").style.display= "inline";
+  dosubmit();
+}
+
 function transferFailed(evt) {
   console.log("An error occurred while transferring the file.");
 }
@@ -68,7 +81,7 @@ var data = new FormData();
 var xhr = new XMLHttpRequest();
 var progress = document.querySelector('.percent');
 
-xhr.addEventListener("load", transferComplete);
+//xhr.addEventListener("load", transferComplete);
 xhr.addEventListener("error", transferFailed);
 xhr.addEventListener("abort", transferCanceled);
 
@@ -79,8 +92,6 @@ xhr.upload.addEventListener('progress',function(ev){
         var percentLoaded = Math.round((ev.loaded / ev.total) * 100);
         console.log(((ev.loaded/ev.total)*100)+'%');
         // Increase the progress bar length.
-        progress.style.width = (ev.loaded/ev.total) + '%';
-        progress.textContent = (ev.loaded/ev.total) + '%';
     }
 }, false);
 
@@ -89,8 +100,7 @@ xhr.onreadystatechange = function(ev){
     xhr.onreadystatechange = function () {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
             //console.log(xhr.responseText);
-            progress.style.width = '100%';
-            progress.textContent = '100%';
+	    document.getElementById("myfile").disabled = false;
             document.getElementById("response").innerHTML=xhr.responseText; 
         }
     };
@@ -101,6 +111,7 @@ for(var i = 0; i < files.length; i++) data.append('file'+i, files[i]);
 data.append('city',city);
 data.append('latitude',latitude);
 data.append('longitude',longitude);
+document.getElementById("myfile").disabled = true;
 xhr.send(data);
 }
 
@@ -109,7 +120,8 @@ event.preventDefault();
 dosubmit();
 });
 </script>
-<div class="footer.row">
-    <a href="https://darksky.net/poweredby/">Powered by Dark Sky</a>
+<div id="response">
+<img src="{{ url_for('static',filename='img/hourglass.svg') }}" id="hourglass" style="display: none" />
+</div>
 </div>
 {% endblock %}

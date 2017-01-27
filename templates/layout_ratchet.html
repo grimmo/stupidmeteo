@@ -1,0 +1,49 @@
+<!doctype html>
+<html class="no-js" lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="apple-touch-icon" href="{{ url_for('static',filename='apple-touch-icon.png') }}">
+        <!-- Place favicon.ico in the root directory -->
+
+        <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/ratchet.min.css') }}">
+	<style>
+body {
+background: rgb(102,182,252);
+background: -moz-linear-gradient(top, rgba(102,182,252,1) 6%, rgba(178,225,255,1) 100%);
+background: -webkit-linear-gradient(top, rgba(102,182,252,1) 6%,rgba(178,225,255,1) 100%);
+background: linear-gradient(to bottom, rgba(102,182,252,1) 6%,rgba(178,225,255,1) 100%);
+background-repeat: no-repeat;
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#66b6fc', endColorstr='#b2e1ff',GradientType=0 );
+}
+html {
+	height:100%;
+}
+	</style>
+	<script src="{{ url_for('static',filename='js/ratchet.min.js') }}"></script>
+    </head>
+    <body>
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
+<header class="bar bar-nav">
+	<h1 class="title"><a href="/">Stupid Meteo</a></h1>
+</header>
+
+    {% block body %}
+<div class="bar bar-standard bar-footer">
+<!-- <a class="icon icon-compose pull-left"></a>
+	<a class="icon icon-gear pull-right"></a> -->
+<a href="https://darksky.net/poweredby/" class="pull-right" border=0>Powered by Dark Sky</a>
+</div>
+<!-- Emulazione touch, togliere prima di produzione -->
+<script src="{{ url_for('static',filename='js/fingerblast.min.js') }}"></script>
+{% endblock %}
+</body>
+</html>
