@@ -116,6 +116,10 @@ xhr.onreadystatechange = function(ev){
             document.getElementById("pippo").innerHTML=xhr.responseText; 
 	    document.getElementById("pippo").style.display = 'block';
         }
+	else {
+		document.getElementById("hourglass").style.display = 'none';
+		document.getElementById("pippo").style.display = 'block';
+	}
     };
 };
 xhr.open('POST', '#', true);

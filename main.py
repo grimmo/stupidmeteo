@@ -150,7 +150,7 @@ def upload_file():
             newimg = tempfile.NamedTemporaryFile(mode='w+b',bufsize=-1, suffix='.jpg',dir=app.config['DOWNLOAD_FOLDER'],prefix='newimg',delete=False)
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
-            #abort(500)
+            abort(500)
             #display.seek(0)
             #newimg = display.read()
             #b64 = base64.b64encode(newimg)
@@ -160,6 +160,6 @@ def upload_file():
         app.logger.debug('GET request, showing empty form')
         return render_template('upload.html')
 
-#@app.errorhandler(500)
-#def internal_error(error):
-#    return render_template('error_500.html',message=error)
+@app.errorhandler(500)
+def internal_error(error):
+    return render_template('error_500.html',message=error)
