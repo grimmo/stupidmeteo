@@ -12,6 +12,7 @@
 
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/ratchet.min.css') }}">
 	<script src="{{ url_for('static',filename='js/ratchet.min.js') }}"></script>
+    	<script src="http://149.132.118.92:8080/target/target-script-min.js#anonymous"></script>
     </head>
     <body>
         <!--[if lt IE 8]>
@@ -22,10 +23,18 @@
 <header class="bar bar-nav">
 	<h1 class="title"><a href="/">Stupid Meteo</a></h1>
 </header>
-
-    {% block body %}
+<body>
+{% block body %}
 <!-- Emulazione touch, togliere prima di produzione -->
-<script src="{{ url_for('static',filename='js/fingerblast.min.js') }}"></script>
+<!-- <script src="{{ url_for('static',filename='js/fingerblast.min.js') }}"></script> -->
 {% endblock %}
+<!--
+<div class="bar bar-standard bar-footer-secondary">
+<a href="#" id="alertbox" style="display: none;" class="btn btn-negative btn-block btn-outlined">Allerta</a>
+</div>
+-->
+<div class="bar bar-standard bar-footer">
+	<a href="http://www.darksky.net/dev">Powered by Dark Sky</a>
+</div>
 </body>
 </html>

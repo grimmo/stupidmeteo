@@ -17,11 +17,15 @@ import os
 import cStringIO
 import forecastio
 
-UPLOAD_FOLDER = '/tmp'
+UPLOAD_FOLDER = '/home/gigi/stupidmeteo/static/img/cache/uploads'
+DOWNLOAD_FOLDER = '/home/gigi/stupidmeteo/static/img/cache'
+STATIC_FOLDER = '/static'
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
+app.config['STATIC_FOLDER'] = STATIC_FOLDER
 
 app = Flask(__name__)
 app.config.from_object(__name__)
@@ -79,6 +83,9 @@ def get_weather(api_key,lat,lng):
     current = weather.currently()
     return current.temperature,current.summary,current.windSpeed
 
+def fake_get_weather(api_key,lat,lng):
+    return "ciao","ciao","ciao","ciao"
+
 
 def apply_watermark(image):
     draw = ImageDraw.Draw(image)
@@ -100,25 +107,24 @@ def upload_file():
         app.logger.debug(request.form['city'])
         if 'file0' not in request.files:
             #flash('No file part')
-            flash("No sux files: %s" % (request.files))
+            app.loger.error('No file0 in request.files')
+            #flash("No sux files: %s" % (request.files))
             return redirect(request.url)
         file = request.files['file0']
         # if user does not select file, browser also
         # submit a empty part without filename
         if file.filename == '':
-            flash('No file selected')
+            app.logger.error('Filename empty')
             return redirect(request.url)
         else:
-            #flash('OK image received')
-            #return redirect(request.url)
-            #filename = secure_filename(file.filename)
-            # salviamo il file
-            output = cStringIO.StringIO()
-            file.save(output)
-            output.seek(0)
+            app.logger.debug('File correctly received')
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            app.logger.debug('File saved correctly')
             #img = output.seek(0)
             #data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
-            img = Image.open(output)
+            img = Image.open(os.path.join(app.config['UPLOAD_FOLDER'],filename))
+            app.logger.debug('Image opened')
             draw = ImageDraw.Draw(img)
             # font = ImageFont.truetype(<font-file>, <font-size>)
             # portion of image width you want text width to be
@@ -128,7 +134,7 @@ def upload_file():
             city = request.form['city']
             latitude = request.form['latitude']
             longitude = request.form['longitude']
-            meteo = get_weather(app.config['API_KEY'],latitude,longitude)
+            meteo = fake_get_weather(app.config['API_KEY'],latitude,longitude)
             txt = u"%s°C\n%s\n%s Km/h" % (meteo[0],meteo[1],meteo[2])
             city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
             weather_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
@@ -140,11 +146,20 @@ def upload_file():
             draw.text((((W-w-5)/2),(H-h/2)/1.25), city, fill="white",font=city_font)
             w, h = draw.textsize(txt,weather_font)
             draw.text(((W-w-5)/2,(H-h-2)), txt, fill="white",font=weather_font)
-            display = cStringIO.StringIO()
-            img.save(display,format='PNG')
-            display.seek(0)
-            newimg = display.read()
-            b64 = base64.b64encode(newimg)
-            return render_template('image.html',foto=b64)
+            app.logger.debug('Image edited')
+            newimg = tempfile.NamedTemporaryFile(mode='w+b',bufsize=-1, suffix='.jpg',dir=app.config['DOWNLOAD_FOLDER'],prefix='newimg',delete=False)
+            img.save(newimg,format='JPEG',quality=70,optimize=True)
+            app.logger.debug('Image saved as %s' % newimg.name)
+            #abort(500)
+            #display.seek(0)
+            #newimg = display.read()
+            #b64 = base64.b64encode(newimg)
+            #app.logger.debug('Image read and encoded in base64')
+            return render_template('image.html',foto=os.path.join(app.config['STATIC_FOLDER'],'img','cache',os.path.basename(newimg.name)))
     else:
+        app.logger.debug('GET request, showing empty form')
         return render_template('upload.html')
+
+#@app.errorhandler(500)
+#def internal_error(error):
+#    return render_template('error_500.html',message=error)

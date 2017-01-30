@@ -22,17 +22,33 @@
 
 .fileContainer [type=file] {
     cursor: pointer;
+
+}
+
+.logo {
+  max-height: 40%;
+  max-width: 40%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto }
+
+#hourglass {
+    width:100% !important;
+    position:relative;
+    z-index:100;
+    display:none;
 }
 </style>
-<div class="content">
-	<p></p>
+<div id="pippo" class="content">
+<img class="logo" src="{{ url_for('static',filename='img/stormycloud.png') }}" />
+<p></p>
 <form id="myform" method=post enctype=multipart/form-data>
 <label class="fileContainer btn btn-positive btn-block">
 Scegli una fotografia
-<input type="file" id="myfile" name="myfile" accept="image/*" required /></label>
-<!-- <button onclick="abortRead();">Annulla</button> -->
-<!-- <input type=submit  class="btn btn-positive btn-block" value=Carica>  -->
+<input type="file" id="myfile" name="myfile" accept="image/*;capture=camera" required /></label>
 </form>
+</div>
+<img id="hourglass" src="{{ url_for('static',filename='img/hourglass.svg') }}" class="clessidra" />
 <script>
 // --- Geolocation --
 var city;
@@ -41,20 +57,20 @@ var longitude;
 function callback(data)
 {
 
-        city = data.city;
-        latitude = data.latitude;
-        longitude = data.longitude;
-        /* city = 'Milano';
+        //city = data.city;
+        //latitude = data.latitude;
+        //longitude = data.longitude;
+        city = 'Milan';
         latitude = '45.5181';
-        longitude= '9.2143'; */
+        longitude= '9.2143'; 
         console.log('La tua citta: '+city);
 }
 // Riabilitare in produzione
-var script = document.createElement('script');
-script.type = 'text/javascript';
-script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
-var h = document.getElementsByTagName('script')[0];
-h.parentNode.insertBefore(script, h);
+//var script = document.createElement('script');
+//script.type = 'text/javascript';
+//script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
+//var h = document.getElementsByTagName('script')[0];
+//h.parentNode.insertBefore(script, h);
 // --- Image upload --
 var form = document.getElementById("myform");
 
@@ -63,7 +79,6 @@ inputElement.addEventListener("change", handleFiles, false);
 function handleFiles() {
   //var fileList = this.files; /* now you can work with the file list */
   console.log('File selezionato.');
-  document.getElementById("hourglass").style.display= "inline";
   dosubmit();
 }
 
@@ -84,9 +99,6 @@ var progress = document.querySelector('.percent');
 //xhr.addEventListener("load", transferComplete);
 xhr.addEventListener("error", transferFailed);
 xhr.addEventListener("abort", transferCanceled);
-
-
-
 xhr.upload.addEventListener('progress',function(ev){
     if (ev.lengthComputable) {
         var percentLoaded = Math.round((ev.loaded / ev.total) * 100);
@@ -99,30 +111,26 @@ xhr.onreadystatechange = function(ev){
     // Blah blah blah, you know how to make AJAX requests
     xhr.onreadystatechange = function () {
         if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-            //console.log(xhr.responseText);
+	    document.getElementById("hourglass").style.display = 'none';
 	    document.getElementById("myfile").disabled = false;
-            document.getElementById("response").innerHTML=xhr.responseText; 
+            document.getElementById("pippo").innerHTML=xhr.responseText; 
+	    document.getElementById("pippo").style.display = 'block';
         }
     };
 };
-
 xhr.open('POST', '#', true);
 for(var i = 0; i < files.length; i++) data.append('file'+i, files[i]);
 data.append('city',city);
 data.append('latitude',latitude);
 data.append('longitude',longitude);
 document.getElementById("myfile").disabled = true;
+document.getElementById("pippo").style.display = 'none';
+document.getElementById("hourglass").style.display = 'block';
 xhr.send(data);
 }
-
 form.addEventListener("submit", function (event) {
 event.preventDefault();
 dosubmit();
 });
 </script>
-<div id="response">
-<img src="{{ url_for('static',filename='img/hourglass.svg') }}" id="hourglass" style="display: none" />
-<a href="https://darksky.net/poweredby/" class="pull-right" border=0>Powered by Dark Sky</a>
-</div>
-</div>
 {% endblock %}
