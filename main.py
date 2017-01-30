@@ -12,6 +12,7 @@ from PIL import Image, ImageFont, ImageDraw
 import base64
 from flask import Flask, request, redirect, url_for
 from werkzeug.utils import secure_filename
+from werkzeug.contrib.cache import SimpleCache
 import tempfile
 import os
 import cStringIO
@@ -37,6 +38,7 @@ app.config.update(dict(
     PASSWORD='default'
 ))
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+c = SimpleCache()
 
 #def init_db():
 #    with app.app_context():
@@ -79,7 +81,11 @@ def proporziona_testo(font,fontsize,text,fraction,image):
     return fontsize
 
 def get_weather(api_key,lat,lng):
-    weather = forecastio.load_forecast(api_key,lat,lng)
+    if c.has('weather'):
+        weather = c.get('weather')
+    else:
+        weather = forecastio.load_forecast(api_key,lat,lng)
+        c.add('weather',weather,timeout=3600)
     current = weather.currently()
     return current.temperature,current.summary,current.windSpeed
 
@@ -134,7 +140,8 @@ def upload_file():
             city = request.form['city']
             latitude = request.form['latitude']
             longitude = request.form['longitude']
-            meteo = fake_get_weather(app.config['API_KEY'],latitude,longitude)
+            #meteo = fake_get_weather(app.config['API_KEY'],latitude,longitude)
+            meteo = get_weather(app.config['API_KEY'],latitude,longitude)
             txt = u"%s°C\n%s\n%s Km/h" % (meteo[0],meteo[1],meteo[2])
             city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
             weather_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
@@ -143,14 +150,14 @@ def upload_file():
             weather_fontsize = proporziona_testo(weather_font,1,txt,weather_fraction,img)
             weather_font = font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", weather_fontsize)
             w, h = draw.textsize(city,city_font)
-            draw.text((((W-w-5)/2),(H-h/2)/1.25), city, fill="white",font=city_font)
+            draw.text((((W-w-5)/2),(H-h/2)/1.75), city, fill="white",font=city_font)
             w, h = draw.textsize(txt,weather_font)
             draw.text(((W-w-5)/2,(H-h-2)), txt, fill="white",font=weather_font)
             app.logger.debug('Image edited')
             newimg = tempfile.NamedTemporaryFile(mode='w+b',bufsize=-1, suffix='.jpg',dir=app.config['DOWNLOAD_FOLDER'],prefix='newimg',delete=False)
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
-            abort(500)
+            #abort(500)
             #display.seek(0)
             #newimg = display.read()
             #b64 = base64.b64encode(newimg)

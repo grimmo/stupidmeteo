@@ -57,20 +57,20 @@ var longitude;
 function callback(data)
 {
 
-        //city = data.city;
-        //latitude = data.latitude;
-        //longitude = data.longitude;
-        city = 'Milan';
-        latitude = '45.5181';
-        longitude= '9.2143'; 
+        city = data.city;
+        latitude = data.latitude;
+        longitude = data.longitude;
+        //city = 'Milan';
+        //latitude = '45.5181';
+        //longitude= '9.2143'; 
         console.log('La tua citta: '+city);
 }
 // Riabilitare in produzione
-//var script = document.createElement('script');
-//script.type = 'text/javascript';
-//script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
-//var h = document.getElementsByTagName('script')[0];
-//h.parentNode.insertBefore(script, h);
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.src = 'https://geoip-db.com/json/geoip.php?jsonp=callback';
+var h = document.getElementsByTagName('script')[0];
+h.parentNode.insertBefore(script, h);
 // --- Image upload --
 var form = document.getElementById("myform");
 
