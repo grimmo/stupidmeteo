@@ -25,6 +25,8 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 app.config['STATIC_FOLDER'] = STATIC_FOLDER
+# Max file size: 4Mb
+app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024
 
 app = Flask(__name__)
 app.config.from_object(__name__)
