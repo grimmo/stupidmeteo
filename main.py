@@ -2,7 +2,6 @@
 # Stupid Meteo
 
 
-#import sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, make_response,flash,jsonify
      
@@ -15,7 +14,6 @@ from werkzeug.utils import secure_filename
 from werkzeug.contrib.cache import SimpleCache
 import tempfile
 import os
-import cStringIO
 import forecastio
 
 UPLOAD_FOLDER = '/home/gigi/stupidmeteo/static/img/cache/uploads'
@@ -40,33 +38,6 @@ app.config.update(dict(
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 c = SimpleCache()
 
-#def init_db():
-#    with app.app_context():
-#        db = get_db()
-#        with app.open_resource('apollo_schema.sql', mode='r') as f:
-#            db.cursor().executescript(f.read())
-#        db.commit()
-
-#def connect_db():
-#    """Connects to the specific database."""
-#    rv = sqlite3.connect(app.config['DATABASE'])
-#    rv.row_factory = sqlite3.Row
-#    return rv
-
-#def get_db():
-#    """Opens a new database connection if there is none yet for the
-#    current application context.
-#    """
-#    if not hasattr(g, 'sqlite_db'):
-#        g.sqlite_db = connect_db()
-#    return g.sqlite_db
-
-#@app.teardown_appcontext
-#def close_db(error):
-#    """Closes the database again at the end of the request."""
-#    if hasattr(g, 'sqlite_db'):
-#        g.sqlite_db.close()
-
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -87,24 +58,23 @@ def get_weather(api_key,lat,lng):
         weather = forecastio.load_forecast(api_key,lat,lng)
         c.add('weather',weather,timeout=3600)
     current = weather.currently()
-    return current.temperature,current.summary,current.windSpeed
+    return current.summary,current.temperature,current.windSpeed
 
 def fake_get_weather(api_key,lat,lng):
-    return "ciao","ciao","ciao","ciao"
+    return u"Nuvoloso","7","5","Precipitazioni assenti"
 
 
-def apply_watermark(image):
+def apply_watermark(image,width,height):
     draw = ImageDraw.Draw(image)
-    text = "StupidMeteo, powered by Dark Sky API"
-    font = ImageFont.truetype('arial.ttf', 12)
+    text = "StupidMeteo"
+    font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",25) 
     textwidth, textheight = draw.textsize(text, font)
     # calculate the x,y coordinates of the text
-    margin = 5
+    margin =3
     x = width - textwidth - margin
     y = height - textheight - margin
     # draw watermark in the bottom right corner
-    draw.text((x, y), text, font=font)
-    image.save('cats.png')
+    draw.text((x, y), text, fill='white',font=font)
     return image
 
 @app.route('/', methods=['GET', 'POST'])
@@ -142,7 +112,7 @@ def upload_file():
             longitude = request.form['longitude']
             #meteo = fake_get_weather(app.config['API_KEY'],latitude,longitude)
             meteo = get_weather(app.config['API_KEY'],latitude,longitude)
-            txt = u"%s°C\n%s\n%s Km/h" % (meteo[0],meteo[1],meteo[2])
+            txt = u"%s\n%s°C\n%s Km/h" % (meteo[0],meteo[1],meteo[2])
             city_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
             weather_font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf",1) 
             city_fontsize = proporziona_testo(city_font,1,city,city_fraction,img)
@@ -150,18 +120,15 @@ def upload_file():
             weather_fontsize = proporziona_testo(weather_font,1,txt,weather_fraction,img)
             weather_font = font = ImageFont.truetype("/usr/share/fonts/truetype/freefont/FreeSans.ttf", weather_fontsize)
             w, h = draw.textsize(city,city_font)
-            draw.text((((W-w-5)/2),(H-h/2)/1.75), city, fill="white",font=city_font)
+            draw.text((((W-w-5)/2),(H-h/2)/1.45), city, fill="white",font=city_font)
             w, h = draw.textsize(txt,weather_font)
             draw.text(((W-w-5)/2,(H-h-2)), txt, fill="white",font=weather_font)
             app.logger.debug('Image edited')
+            #img = apply_watermark(img,W,H)
             newimg = tempfile.NamedTemporaryFile(mode='w+b',bufsize=-1, suffix='.jpg',dir=app.config['DOWNLOAD_FOLDER'],prefix='newimg',delete=False)
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
             #abort(500)
-            #display.seek(0)
-            #newimg = display.read()
-            #b64 = base64.b64encode(newimg)
-            #app.logger.debug('Image read and encoded in base64')
             return render_template('image.html',foto=os.path.join(app.config['STATIC_FOLDER'],'img','cache',os.path.basename(newimg.name)))
     else:
         app.logger.debug('GET request, showing empty form')

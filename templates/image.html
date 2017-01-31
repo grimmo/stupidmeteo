@@ -5,5 +5,5 @@
   width: auto;
 }
 </style>
-<a href="intent:#Intent;action=android.intent.action.SEND;type=image/jpeg;S.android.intent.extra.STREAM=#;end" border=0><img class="autoscale" src="{{ foto }}"/></a>
+<a href="{{ foto }}" download target="_blank" border=0><img class="autoscale" src="{{ foto }}"/></a>
 <img src="{{ url_for('static',filename='img/hourglass.svg') }}" id="hourglass" style="display: none" />

@@ -115,6 +115,7 @@ xhr.onreadystatechange = function(ev){
 	    document.getElementById("myfile").disabled = false;
             document.getElementById("pippo").innerHTML=xhr.responseText; 
 	    document.getElementById("pippo").style.display = 'block';
+	    document.getElementById("footersky").style.display = 'none';
         }
 	else {
 		document.getElementById("hourglass").style.display = 'none';
