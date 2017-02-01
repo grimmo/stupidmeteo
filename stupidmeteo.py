@@ -13,19 +13,16 @@ import tempfile
 import os
 import forecastio
 
+app = Flask(__name__)
 STATIC_FOLDER = 'static'
 DOWNLOAD_FOLDER = os.path.join(app.root_path,STATIC_FOLDER,'img/cache')
 UPLOAD_FOLDER = os.path.join(DOWNLOAD_FOLDER,'uploads')
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-
-app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
 app.config['STATIC_FOLDER'] = STATIC_FOLDER
 # Max file size: 4Mb
 app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024
-
-app = Flask(__name__)
 app.config.from_object(__name__)
 # Load default config and override config from an environment variable
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
@@ -122,7 +119,7 @@ def upload_file():
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
             #abort(500)
-            return render_template('image.html',foto=os.path.join(app.config['DOWNLOAD_FOLDER'],os.path.basename(newimg.name)))
+            return render_template('image.html',foto=os.path.join(app.config['STATIC_FOLDER'],'img/cache',os.path.basename(newimg.name)))
     else:
         app.logger.debug('GET request, showing empty form')
         return render_template('upload.html')
