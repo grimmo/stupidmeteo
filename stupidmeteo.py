@@ -14,18 +14,18 @@ import os
 import forecastio
 
 app = Flask(__name__)
-STATIC_FOLDER = 'static'
-DOWNLOAD_FOLDER = os.path.join(app.root_path,STATIC_FOLDER,'img/cache')
-UPLOAD_FOLDER = os.path.join(DOWNLOAD_FOLDER,'uploads')
-ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['DOWNLOAD_FOLDER'] = DOWNLOAD_FOLDER
-app.config['STATIC_FOLDER'] = STATIC_FOLDER
+#STATIC_FOLDER = 'static'
+#DOWNLOAD_FOLDER = os.path.join(app.root_path,STATIC_FOLDER,'img/cache')
+#UPLOAD_FOLDER = os.path.join(DOWNLOAD_FOLDER,'uploads')
+app.config['DOWNLOAD_FOLDER'] = os.path.join(app.root_path,STATIC_FOLDER,DOWNLOAD_FOLDER)
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path,STATIC_FOLDER,UPLOAD_FOLDER)
+#app.config['STATIC_FOLDER'] = STATIC_FOLDER
 # Max file size: 4Mb
 app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024
 app.config.from_object(__name__)
 # Load default config and override config from an environment variable
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 c = SimpleCache()
 
 def allowed_file(filename):
