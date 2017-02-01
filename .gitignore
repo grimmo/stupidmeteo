@@ -4,6 +4,7 @@
 .*
 venv/*
 config.py
+attiva.sh
 static/404.html
 static/LICENSE.txt
 static/apple-touch-icon.png
