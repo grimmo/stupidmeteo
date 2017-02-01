@@ -3,22 +3,19 @@
 
 
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, make_response,flash,jsonify
-     
+     render_template, make_response,flash,jsonify,send_from_directory
 import logging
 from logging.handlers import RotatingFileHandler
 from PIL import Image, ImageFont, ImageDraw
-import base64
-from flask import Flask, request, redirect, url_for
 from werkzeug.utils import secure_filename
 from werkzeug.contrib.cache import SimpleCache
 import tempfile
 import os
 import forecastio
 
-UPLOAD_FOLDER = '/home/gigi/stupidmeteo/static/img/cache/uploads'
-DOWNLOAD_FOLDER = '/home/gigi/stupidmeteo/static/img/cache'
-STATIC_FOLDER = '/static'
+STATIC_FOLDER = 'static'
+DOWNLOAD_FOLDER = os.path.join(app.root_path,STATIC_FOLDER,'img/cache')
+UPLOAD_FOLDER = os.path.join(DOWNLOAD_FOLDER,'uploads')
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -31,12 +28,6 @@ app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024
 app = Flask(__name__)
 app.config.from_object(__name__)
 # Load default config and override config from an environment variable
-app.config.update(dict(
-    #DATABASE=os.path.join(app.root_path, 'apollo.db'),
-    SECRET_KEY='development key',
-    USERNAME='admin',
-    PASSWORD='default'
-))
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 c = SimpleCache()
 
@@ -131,10 +122,15 @@ def upload_file():
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
             #abort(500)
-            return render_template('image.html',foto=os.path.join(app.config['STATIC_FOLDER'],'img','cache',os.path.basename(newimg.name)))
+            return render_template('image.html',foto=os.path.join(app.config['DOWNLOAD_FOLDER'],os.path.basename(newimg.name)))
     else:
         app.logger.debug('GET request, showing empty form')
         return render_template('upload.html')
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(STATIC_FOLDER),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.errorhandler(500)
 def internal_error(error):
