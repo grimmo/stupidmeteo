@@ -14,12 +14,6 @@ import os
 import forecastio
 
 app = Flask(__name__)
-#STATIC_FOLDER = 'static'
-#DOWNLOAD_FOLDER = os.path.join(app.root_path,STATIC_FOLDER,'img/cache')
-#UPLOAD_FOLDER = os.path.join(DOWNLOAD_FOLDER,'uploads')
-app.config['DOWNLOAD_FOLDER'] = os.path.join(app.root_path,STATIC_FOLDER,DOWNLOAD_FOLDER)
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path,STATIC_FOLDER,UPLOAD_FOLDER)
-#app.config['STATIC_FOLDER'] = STATIC_FOLDER
 # Max file size: 4Mb
 app.config['MAX_CONTENT_LENGTH'] = 4 * 1024 * 1024
 app.config.from_object(__name__)
@@ -119,14 +113,14 @@ def upload_file():
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
             #abort(500)
-            return render_template('image.html',foto=os.path.join(app.config['STATIC_FOLDER'],'img/cache',os.path.basename(newimg.name)))
+            return render_template('image.html',foto=os.path.relpath(newimg.name))
     else:
         app.logger.debug('GET request, showing empty form')
         return render_template('upload.html')
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(STATIC_FOLDER),
+    return send_from_directory(os.path.join(app.static_folder),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.errorhandler(500)
