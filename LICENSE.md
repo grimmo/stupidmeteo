@@ -1,6 +1,6 @@
 [StupidMeteo] 
-<one line to give the program's name and a brief idea of what it does.>
-Copyright (C) <year>  <name of author>
+Simple mobile webapp to upload a picture and overlay weather data from darksky.net
+Copyright (C) [2017] [Luigi Messina]
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
