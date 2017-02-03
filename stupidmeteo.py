@@ -20,6 +20,9 @@ app.config.from_object(__name__)
 # Load default config and override config from an environment variable
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+file_handler = RotatingFileHandler('stupidmeteo.log', maxBytes=1024*1000*10, backupCount=10)
+file_handler.setLevel(logging.WARNING)
+app.logger.addHandler(file_handler)
 c = SimpleCache()
 
 def allowed_file(filename):
@@ -67,7 +70,7 @@ def upload_file():
         app.logger.debug(request.form['city'])
         if 'file0' not in request.files:
             #flash('No file part')
-            app.loger.error('No file0 in request.files')
+            app.logger.error('No file0 in request.files')
             #flash("No sux files: %s" % (request.files))
             return redirect(request.url)
         file = request.files['file0']
@@ -77,6 +80,7 @@ def upload_file():
             app.logger.error('Filename empty')
             return redirect(request.url)
         else:
+            flash('Upload complete')
             app.logger.debug('File correctly received')
             filename = secure_filename(file.filename)
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
@@ -126,3 +130,7 @@ def favicon():
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('error_500.html',message=error)
+
+@app.route('/transferfail/')
+def transfer_failed():
+    return render_template('transfer_failed.html')

@@ -12,8 +12,17 @@
 
         <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/ratchet.min.css') }}">
 	<script src="{{ url_for('static',filename='js/ratchet.min.js') }}"></script>
-    	<script src="http://149.132.118.92:8080/target/target-script-min.js#anonymous"></script>
     </head>
+    <title>Stupid Meteo</title>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
     <body>
         <!--[if lt IE 8]>
             <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
@@ -21,7 +30,7 @@
 
         <!-- Add your site or application content here -->
 <header class="bar bar-nav">
-	<h1 class="title"><a href="/">Stupid Meteo</a></h1>
+	<h1 class="title"><a href='/' onclick='window.location.replace("/");'>Stupid Meteo</a></h1>
 </header>
 <body>
 {% block body %}

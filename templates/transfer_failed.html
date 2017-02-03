@@ -1,0 +1,20 @@
+{% extends "layout_ratchet.html" %}
+{% block body %}
+<style>
+.autoscale {
+  max-width: 100%;
+  height: auto;
+  width: auto;
+  display: block;
+  margin-left: auto;
+  margin-right: auto
+}
+</style>
+<h1>Transfer failed</h1>
+<img src="{{ url_for('static',filename='img/fatguy.png') }}" class="autoscale" />
+<h5>
+Ouch, the file transfer failed.
+Perhaps the image was too big?
+Please, retry with a smaller file.
+</h5>
+{% endblock %}
