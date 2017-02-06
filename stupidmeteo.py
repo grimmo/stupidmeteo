@@ -80,10 +80,9 @@ def upload_file():
             app.logger.error('Filename empty')
             return redirect(request.url)
         else:
-            flash('Upload complete')
             app.logger.debug('File correctly received')
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filename = tempfile.mkstemp(dir=app.config['UPLOAD_FOLDER'])[1]
+            file.save(filename)
             app.logger.debug('File saved correctly')
             #img = output.seek(0)
             #data = open(os.path.join(app.config['UPLOAD_FOLDER'],filename),"rb")
@@ -116,6 +115,9 @@ def upload_file():
             newimg = tempfile.NamedTemporaryFile(mode='w+b',bufsize=-1, suffix='.jpg',dir=app.config['DOWNLOAD_FOLDER'],prefix='newimg',delete=False)
             img.save(newimg,format='JPEG',quality=70,optimize=True)
             app.logger.debug('Image saved as %s' % newimg.name)
+            # Remove original uploaded file
+            os.unlink(filename)
+            app.logger.debug('Removed %s' % filename)
             #abort(500)
             return render_template('image.html',foto=os.path.relpath(newimg.name))
     else:
