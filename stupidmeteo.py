@@ -39,11 +39,11 @@ def proporziona_testo(font,fontsize,text,fraction,image):
     return fontsize
 
 def get_weather(api_key,lat,lng):
-    if c.has('weather'):
-        weather = c.get('weather')
+    if c.has('%s-%s-weather' % (lat,lng)):
+        weather = c.get('%s-%sweather' %(lat,lng))
     else:
         weather = forecastio.load_forecast(api_key,lat,lng)
-        c.add('weather',weather,timeout=3600)
+        c.add('%s-%s-weather' % (lat,lng),weather,timeout=3600)
     current = weather.currently()
     return current.summary,current.temperature,current.windSpeed
 
